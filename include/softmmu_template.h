@@ -385,11 +385,12 @@ redo:
             retaddr = GETPC();
             global_retaddr = retaddr;
             ioaddr = cpu->iotlb[mmu_idx][index];
-            glue(io_write, SUFFIX)(ioaddr, val, addr, retaddr);
+            // glue(io_write, SUFFIX)(ioaddr, val, addr, retaddr); //original
             if(unlikely(cpu->tlib_is_on_memory_access_enabled != 0)) {
                 tlib_assert(sizeof(val) <= sizeof(uint64_t));
                 tlib_on_memory_access(CPU_PC(cpu), MEMORY_IO_WRITE, addr, (uint64_t)val);
             }
+            glue(io_write, SUFFIX)(ioaddr, val, addr, retaddr); //fuzz_put_here so that we can store prev value at onMemAccess
         } else if(((addr & ~TARGET_PAGE_MASK) + DATA_SIZE - 1) >= TARGET_PAGE_SIZE) {
         do_unaligned_access:
             retaddr = GETPC();
@@ -398,11 +399,12 @@ redo:
                 do_unaligned_access(addr, 1, mmu_idx, retaddr);
             }
 #endif
-            glue(glue(slow_st, SUFFIX), MMUSUFFIX)(addr, val, mmu_idx, retaddr);
+            // glue(glue(slow_st, SUFFIX), MMUSUFFIX)(addr, val, mmu_idx, retaddr); //orig
             if(unlikely(cpu->tlib_is_on_memory_access_enabled != 0)) {
                 tlib_assert(sizeof(val) <= sizeof(uint64_t));
                 tlib_on_memory_access(CPU_PC(cpu), MEMORY_WRITE, addr, (uint64_t)val);
             }
+            glue(glue(slow_st, SUFFIX), MMUSUFFIX)(addr, val, mmu_idx, retaddr); //added here for fuzz to store prev value
         } else {
             /* aligned/unaligned access in the same page */
 #ifdef ALIGNED_ONLY
@@ -413,11 +415,12 @@ redo:
 #endif
 
             addend = cpu->tlb_table[mmu_idx][index].addend;
-            glue(glue(st, SUFFIX), _raw)((uint8_t *)(uintptr_t)(addr + addend), val);
+            // glue(glue(st, SUFFIX), _raw)((uint8_t *)(uintptr_t)(addr + addend), val); //orig
             if(unlikely(cpu->tlib_is_on_memory_access_enabled != 0)) {
                 tlib_assert(sizeof(val) <= sizeof(uint64_t));
                 tlib_on_memory_access(CPU_PC(cpu), MEMORY_WRITE, addr, (uint64_t)val);
             }
+            glue(glue(st, SUFFIX), _raw)((uint8_t *)(uintptr_t)(addr + addend), val); //added here for fuzz to store prev value
         }
     } else {
         /* the page is not in the TLB : fill it */
