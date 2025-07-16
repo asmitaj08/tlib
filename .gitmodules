@@ -1,3 +1,4 @@
 [submodule "softfloat-3"]
 	path = softfloat-3
 	url = git@github.com:asmitaj08/berkeley-softfloat-3.git
+	branch = seff-softfloat-3
