@@ -139,7 +139,8 @@ endif()
 if (NOT CMAKE_C_COMPILER_ID MATCHES "(clang)" AND NOT "${TARGET_ACTUAL_ARCH}" STREQUAL "arm64")
     # Clang throws warnings from the arm64 target's function stubs
     # so do not enable -Werror in that case until that is fixed
-    add_definitions(-Werror)
+
+    add_definitions(-Werror) 
 endif()
 
 
